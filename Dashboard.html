@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <div id="chart_puesto"></div>
+  <div id="chart_estado"></div>
+  <script>
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(() => {
+      google.script.run.withSuccessHandler(draw).getDashboardData();
+    });
+    function draw(data) {
+      // Gráfico por puesto
+      var dtPuesto = [['Puesto','Cant']];
+      for(var k in data.porPuesto) dtPuesto.push([k, data.porPuesto[k]]);
+      var chart = new google.visualization.PieChart(document.getElementById('chart_puesto'));
+      chart.draw(google.visualization.arrayToDataTable(dtPuesto), {title:'Por Puesto'});
+
+      var dtEstado = [['Estado','Cant']];
+      for(var k in data.porEstado) dtEstado.push([k, data.porEstado[k]]);
+      var chart2 = new google.visualization.PieChart(document.getElementById('chart_estado'));
+      chart2.draw(google.visualization.arrayToDataTable(dtEstado), {title:'Por Estado'});
+    }
+  </script>
+</body>
+</html>
