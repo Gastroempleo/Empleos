@@ -1,4 +1,4 @@
-var SPREADSHEET_ID = 'ID_DE_TU_HOJA_DE_CALCULO'; // ← Lo cambiás después
+var SPREADSHEET_ID = 'https://docs.google.com/spreadsheets/d/1fQKRt4236PBctr0Z2m2wv7ZcICJD7_SkndsWNBORh5U/edit?gid=0#gid=0'; // ← Lo cambiás después
 
 function doGet(e) {
   var page = e.parameter.page;
