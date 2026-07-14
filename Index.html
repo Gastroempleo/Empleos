@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI',sans-serif; }
+    body { background:#f0f2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .container { background:white; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:500px; padding:2rem; }
+    .progreso { display:flex; justify-content:center; gap:1rem; margin-bottom:2rem; }
+    .paso { width:36px; height:36px; border-radius:50%; background:#e0e0e0; display:flex; align-items:center; justify-content:center; color:#666; font-weight:bold; }
+    .paso.active { background:#1a73e8; color:white; }
+    .form-step { display:none; animation: fadeIn 0.4s; }
+    .form-step.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+    h2 { margin-bottom:1.5rem; color:#1a73e8; }
+    input, select, textarea { width:100%; padding:12px; margin:8px 0 16px; border:1px solid #ddd; border-radius:8px; font-size:1rem; }
+    .btn-next, .btn-submit { background:#1a73e8; color:white; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; }
+    .btn-prev { background:transparent; border:1px solid #1a73e8; color:#1a73e8; padding:12px 24px; border-radius:8px; cursor:pointer; }
+    .drop-zone { border:2px dashed #1a73e8; border-radius:12px; padding:2rem; text-align:center; margin:1rem 0; cursor:pointer; transition:background 0.3s; }
+    .drop-zone:hover, .drop-zone.dragover { background:#e8f0fe; }
+    .modal { background:white; padding:1.5rem; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; text-align:center; }
+    .success { text-align:center; }
+    .success h2 { color:#2ecc71; }
+  </style>
+</head>
+<body>
+<div class="container" id="mainContainer">
+  <div class="progreso">
+    <div class="paso active" data-step="1">1</div>
+    <div class="paso" data-step="2">2</div>
+    <div class="paso" data-step="3">3</div>
+  </div>
+
+  <form id="formPostulacion">
+    <div class="form-step active" id="step1">
+      <h2>👤 Datos personales</h2>
+      <input type="text" id="nombre" placeholder="Nombre y Apellido *" required>
+      <input type="email" id="email" placeholder="Email *" required>
+      <input type="tel" id="telefono" placeholder="Teléfono *" required>
+      <input type="text" id="barrio" placeholder="Barrio / Ciudad *" required>
+      <button type="button" class="btn-next" onclick="siguiente(2)">Siguiente →</button>
+    </div>
+
+    <div class="form-step" id="step2">
+      <h2>💼 Postulación</h2>
+      <select id="puesto" required>
+        <option value="">Seleccionar posición *</option>
+        <option>Vendedor/a</option><option>Cajero/a</option><option>Encargado/a</option>
+        <option>Supervisor/a</option><option>Depósito</option><option>Administración</option>
+        <option>Recursos Humanos</option><option>Marketing</option><option>E-commerce</option>
+        <option>Otra</option>
+      </select>
+      <input type="number" id="experiencia" placeholder="Años de experiencia" min="0">
+      <select id="disponibilidad" required>
+        <option value="">Disponibilidad horaria *</option>
+        <option>Full Time</option><option>Part Time Mañana</option><option>Part Time Tarde</option>
+        <option>Horario Rotativo</option><option>Fines de Semana</option><option>Inmediata</option>
+      </select>
+      <button type="button" class="btn-prev" onclick="anterior(1)">← Anterior</button>
+      <button type="button" class="btn-next" onclick="siguiente(3)">Siguiente →</button>
+    </div>
+
+    <div class="form-step" id="step3">
+      <h2>📄 Experiencia / CV</h2>
+      <label>
+        <input type="checkbox" id="sinCV"> No tengo CV, deseo cargar mi experiencia manualmente
+      </label>
+      <div id="manualExp" style="display:none;">
+        <textarea id="expManual" placeholder="Empresa, Puesto, Fechas, Tareas..." rows="4"></textarea>
+      </div>
+      <div id="cvUpload">
+        <div class="drop-zone" id="dropZone">
+          <p>Arrastrá tu CV aquí o hacé click</p>
+          <input type="file" id="cvFile" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display:none;">
+          <small>PDF, DOCX, JPG, PNG (máx. 10MB)</small>
+        </div>
+      </div>
+      <button type="button" class="btn-prev" onclick="anterior(2)">← Anterior</button>
+      <button type="submit" class="btn-submit">Postularme</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  let pasoActual = 1;
+  function mostrarPaso(n) {
+    document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+    document.getElementById('step'+n).classList.add('active');
+    document.querySelectorAll('.paso').forEach((el,i) => {
+      el.classList.toggle('active', i+1 <= n);
+    });
+    pasoActual = n;
+  }
+  function siguiente(n) {
+    if(pasoActual===1) {
+      if(!document.getElementById('nombre').value || !document.getElementById('email').value ||
+         !document.getElementById('telefono').value || !document.getElementById('barrio').value) {
+        alert('Completá todos los campos'); return;
+      }
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('email').value)) {
+        alert('Email inválido'); return;
+      }
+    } else if(pasoActual===2) {
+      if(!document.getElementById('puesto').value || !document.getElementById('disponibilidad').value) {
+        alert('Seleccioná posición y disponibilidad'); return;
+      }
+    }
+    mostrarPaso(n);
+  }
+  function anterior(n) { mostrarPaso(n); }
+
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('cvFile');
+  dropZone.addEventListener('click', ()=> fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    fileInput.files = e.dataTransfer.files;
+    actualizarNombreArchivo();
+  });
+  fileInput.addEventListener('change', actualizarNombreArchivo);
+  function actualizarNombreArchivo() {
+    if(fileInput.files.length) {
+      dropZone.innerHTML = `<p>${fileInput.files[0].name} (${(fileInput.files[0].size/1024/1024).toFixed(1)} MB)</p>`;
+    }
+  }
+
+  document.getElementById('sinCV').addEventListener('change', function() {
+    document.getElementById('cvUpload').style.display = this.checked ? 'none' : 'block';
+    document.getElementById('manualExp').style.display = this.checked ? 'block' : 'none';
+  });
+
+  document.getElementById('formPostulacion').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if(pasoActual !== 3) { mostrarPaso(3); return; }
+
+    var formData = {
+      nombre: document.getElementById('nombre').value,
+      email: document.getElementById('email').value,
+      telefono: document.getElementById('telefono').value,
+      barrio: document.getElementById('barrio').value,
+      puesto: document.getElementById('puesto').value,
+      experiencia: document.getElementById('experiencia').value,
+      disponibilidad: document.getElementById('disponibilidad').value,
+      experienciaManual: document.getElementById('expManual') ? document.getElementById('expManual').value : ''
+    };
+
+    google.script.run.withSuccessHandler(function(res) {
+      if(res.exists) {
+        if(confirm('Ya existe un postulante con estos datos. ¿Actualizar?')) {
+          subirFormulario(null, null, null);
+        }
+      } else {
+        subirFormulario(null, null, null);
+      }
+    }).checkDuplicate(formData.email, formData.telefono);
+
+    function subirFormulario(archivoBase64, fileName, fileMime) {
+      var file = fileInput.files[0];
+      if(!file && !document.getElementById('sinCV').checked) {
+        alert('Debés subir tu CV o marcar que no tenés'); return;
+      }
+      if(file && file.size > 10*1024*1024) {
+        alert('El archivo supera los 10 MB'); return;
+      }
+
+      if(file) {
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          var base64 = ev.target.result.split(',')[1];
+          google.script.run
+            .withSuccessHandler(function(res) {
+              if(res.success) {
+                document.getElementById('mainContainer').innerHTML =
+                  '<div class="success"><h2>¡Gracias por postularte!</h2><p>Recibimos tu información.<br>Nos pondremos en contacto.</p></div>';
+              }
+            })
+            .procesarPostulacion(formData, base64, file.name, file.type);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if(res.success) {
+              document.getElementById('mainContainer').innerHTML =
+                '<div class="success"><h2>¡Gracias por postularte!</h2><p>Recibimos tu información.<br>Nos pondremos en contacto.</p></div>';
+            }
+          })
+          .procesarPostulacion(formData, null, null, null);
+      }
+    }
+  });
+</script>
+</body>
+</html>
