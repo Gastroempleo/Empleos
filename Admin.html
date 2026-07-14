@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><base target="_top"></head>
+<body>
+  <h1>Panel de Administración</h1>
+  <input type="text" id="search" placeholder="Buscar...">
+  <select id="filtroPuesto"><option value="">Todos</option></select>
+  <select id="filtroEstado"><option value="">Todos</option></select>
+  <button onclick="buscar()">Buscar</button>
+  <table id="tabla"><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Puesto</th><th>Estado</th><th>CV</th></tr></thead><tbody></tbody></table>
+  <script>
+    function buscar() {
+      google.script.run.withSuccessHandler(render).getCandidatos({
+        search: document.getElementById('search').value,
+        puesto: document.getElementById('filtroPuesto').value,
+        estado: document.getElementById('filtroEstado').value
+      });
+    }
+    function render(data) {
+      var tbody = document.querySelector('#tabla tbody');
+      tbody.innerHTML = data.map(r => `<tr><td>${r[12]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[5]}</td><td>${r[13]}</td><td>${r[10]?`<a href="${r[10]}" target="_blank">Ver</a>`:'No'}</td></tr>`).join('');
+    }
+    window.onload = buscar;
+  </script>
+</body>
+</html>
